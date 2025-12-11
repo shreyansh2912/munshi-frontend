@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+// Color Variables - Matching munshi-2.0 index.html exactly
+$munshi-indigo: #2C3E66;
+$munshi-teal: #0C736B;
+$munshi-beige: #E8DCC4;
+$munshi-gold: #D7B45A;
+$munshi-white: #F7F8FA;
+$munshi-mint: #74D3A1;
+$munshi-text: #1A202C;
+$munshi-subtext: #4A5568;
+
+// Dark mode colors
+$munshi-dark-bg: #000000; // True Black
+$munshi-dark-card: #09090b; // Zinc-950
+$munshi-dark-border: #27272a; // Zinc-800
+$munshi-dark-text: #f4f4f5; // Zinc-100
+
+// Scrollbar colors
+$scrollbar-light: #CBD5E0;
+$scrollbar-light-hover: #A0AEC0;
+$scrollbar-dark: #27272a; // Zinc-800
+$scrollbar-dark-hover: #3f3f46; // Zinc-700
+
+// Base styles
+body {
+    background-color: $munshi-white;
+    color: $munshi-text;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+// Dark mode - matching munshi-2.0 exactly
+.dark body,
+:root.dark body,
+html.dark body {
+    background-color: $munshi-dark-bg;
+    color: $munshi-dark-text;
+}
+
+// Custom Scrollbar
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $scrollbar-light;
+    border-radius: 4px;
+
+    &:hover {
+        background: $scrollbar-light-hover;
+    }
+}
+
+// Dark mode scrollbar
+.dark,
+:root.dark,
+html.dark {
+    ::-webkit-scrollbar-thumb {
+        background: $scrollbar-dark;
+
+        &:hover {
+            background: $scrollbar-dark-hover;
+        }
+    }
+}
+
+// Utility classes
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// Gradient mask for scrolling testimonials
+.mask-gradient {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+}
+
+// Selection color
+::selection {
+    background-color: $munshi-indigo;
+    color: white;
+}
+
+// Focus styles
+:focus-visible {
+    outline: 2px solid $munshi-indigo;
+    outline-offset: 2px;
+}
+
+.dark :focus-visible {
+    outline-color: white;
+}
