@@ -43,17 +43,23 @@ export default function GuidePage() {
       <div className="py-20 px-6 max-w-7xl mx-auto bg-munshi-white dark:bg-munshi-dark-bg -mt-10 rounded-t-3xl relative z-10">
          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categories.map((cat, i) => (
-               <Card key={i} className="hover:shadow-lg transition-shadow cursor-pointer group p-6">
-                  <div className="flex items-start gap-4">
-                     <div className="w-12 h-12 rounded-xl bg-munshi-indigo/5 dark:bg-zinc-800 text-munshi-indigo dark:text-white flex items-center justify-center group-hover:bg-munshi-indigo group-hover:text-white transition-colors">
-                        <cat.icon size={24} />
+               <Link 
+                  key={i} 
+                  href={`/guide/${cat.title.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-').replace(/&/g, '')}`}
+                  className="block"
+               >
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer group p-6 h-full">
+                     <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-munshi-indigo/5 dark:bg-zinc-800 text-munshi-indigo dark:text-white flex items-center justify-center group-hover:bg-munshi-indigo group-hover:text-white transition-colors">
+                           <cat.icon size={24} />
+                        </div>
+                        <div>
+                           <h3 className="font-bold text-munshi-indigo dark:text-white text-lg mb-1">{cat.title}</h3>
+                           <p className="text-sm text-gray-500">{cat.count}</p>
+                        </div>
                      </div>
-                     <div>
-                        <h3 className="font-bold text-munshi-indigo dark:text-white text-lg mb-1">{cat.title}</h3>
-                        <p className="text-sm text-gray-500">{cat.count}</p>
-                     </div>
-                  </div>
-               </Card>
+                  </Card>
+               </Link>
             ))}
          </div>
 
