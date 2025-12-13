@@ -14,6 +14,8 @@ import type { Invoice } from '@/lib/api';
 interface InvoicesSceneProps {
   initialData: {
     invoices: Invoice[];
+    customers: any[];  // Will be properly typed when we integrate the form
+    products: any[];   // Will be properly typed when we integrate the form
   };
 }
 

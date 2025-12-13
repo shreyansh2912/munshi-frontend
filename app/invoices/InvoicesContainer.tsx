@@ -24,15 +24,21 @@ async function getInvoicesData() {
     const config = { headers: { Cookie: cookieHeader } };
 
     console.log('[Invoices] Cookie header length:', cookieHeader.length);
-    console.log('[Invoices] Fetching invoices...');
+    console.log('[Invoices] Fetching invoices, customers, and products...');
 
-    // Fetch invoices data on server
-    const invoices = await api.invoices.list(undefined, config);
+    // Fetch invoices, customers, and products data on server
+    const [invoices, customers, products] = await Promise.all([
+      api.invoices.list(undefined, config),
+      api.customers.list(undefined, config),
+      api.products.list(config),  // Added config for server-side auth
+    ]);
 
     console.log('[Invoices] Data fetched successfully');
 
     return {
       invoices,
+      customers,
+      products,
     };
   } catch (error) {
     console.error('Invoices data fetch error:', error);

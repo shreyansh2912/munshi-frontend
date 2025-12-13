@@ -110,30 +110,6 @@ export interface UpdateLedgerRequest {
 
 export interface InvoiceItem {
     id?: string;
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    total: number;
-}
-
-export interface Invoice {
-    id: string;
-    invoiceNumber: string;
-    customerId: string;
-    customer?: Customer;
-    items: InvoiceItem[];
-    subtotal: number;
-    tax: number;
-    total: number;
-    status: string;
-    dueDate: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface CreateInvoiceRequest {
-    customerId: string;
-    items: InvoiceItem[];
     tax?: number;
     dueDate: string;
 }

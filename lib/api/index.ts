@@ -48,4 +48,4 @@ export { tokenStorage } from './storage';
 export { apiClient } from './client';
 
 // Services
-export { api, authService, userService, ledgerService, healthService, productsService } from './services';
+export { api, authService, userService, ledgerService, healthService, productsService, paymentsService } from './services';

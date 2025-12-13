@@ -17,40 +17,40 @@ export const productsService = {
     /**
      * List all products
      */
-    async list(): Promise<Product[]> {
-        const response = await apiClient.get<APIResponse<Product[]>>('/products');
+    async list(config?: any): Promise<Product[]> {
+        const response = await apiClient.get<APIResponse<Product[]>>('/products', undefined, config);
         return response.data;
     },
 
     /**
      * Get a single product by ID
      */
-    async getById(id: string | number): Promise<Product> {
-        const response = await apiClient.get<APIResponse<Product>>(`/products/${id}`);
+    async getById(id: string | number, config?: any): Promise<Product> {
+        const response = await apiClient.get<APIResponse<Product>>(`/products/${id}`, undefined, config);
         return response.data;
     },
 
     /**
      * Create a new product
      */
-    async create(data: CreateProductRequest): Promise<Product> {
-        const response = await apiClient.post<APIResponse<Product>>('/products', data);
+    async create(data: CreateProductRequest, config?: any): Promise<Product> {
+        const response = await apiClient.post<APIResponse<Product>>('/products', data, config);
         return response.data;
     },
 
     /**
      * Update a product
      */
-    async update(id: string | number, data: UpdateProductRequest): Promise<Product> {
-        const response = await apiClient.patch<APIResponse<Product>>(`/products/${id}`, data);
+    async update(id: string | number, data: UpdateProductRequest, config?: any): Promise<Product> {
+        const response = await apiClient.patch<APIResponse<Product>>(`/products/${id}`, data, config);
         return response.data;
     },
 
     /**
      * Delete a product (soft delete)
      */
-    async delete(id: string | number): Promise<void> {
-        await apiClient.delete(`/products/${id}`);
+    async delete(id: string | number, config?: any): Promise<void> {
+        await apiClient.delete(`/products/${id}`, config);
     },
 
     // Category management

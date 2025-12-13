@@ -5,6 +5,8 @@
 
 import { apiClient } from './client';
 import { API_ENDPOINTS } from './config';
+import productsApi from './products';
+import paymentsApi from './payments';
 import type {
     LoginRequest,
     RegisterRequest,
@@ -140,36 +142,36 @@ export const invoicesService = {
     /**
      * List all invoices
      */
-    async list(params?: { status?: string; search?: string }): Promise<Invoice[]> {
-        return apiClient.get<Invoice[]>(API_ENDPOINTS.invoices.list, params);
+    async list(params?: { status?: string; search?: string }, config?: any): Promise<Invoice[]> {
+        return apiClient.get<Invoice[]>(API_ENDPOINTS.invoices.list, params, config);
     },
 
     /**
      * Get invoice by ID
      */
-    async get(id: string): Promise<Invoice> {
-        return apiClient.get<Invoice>(API_ENDPOINTS.invoices.get(id));
+    async get(id: string, config?: any): Promise<Invoice> {
+        return apiClient.get<Invoice>(API_ENDPOINTS.invoices.get(id), undefined, config);
     },
 
     /**
      * Create new invoice
      */
-    async create(data: CreateInvoiceRequest): Promise<Invoice> {
-        return apiClient.post<Invoice>(API_ENDPOINTS.invoices.create, data);
+    async create(data: CreateInvoiceRequest, config?: any): Promise<Invoice> {
+        return apiClient.post<Invoice>(API_ENDPOINTS.invoices.create, data, config);
     },
 
     /**
      * Update invoice
      */
-    async update(id: string, data: UpdateInvoiceRequest): Promise<Invoice> {
-        return apiClient.patch<Invoice>(API_ENDPOINTS.invoices.update(id), data);
+    async update(id: string, data: UpdateInvoiceRequest, config?: any): Promise<Invoice> {
+        return apiClient.patch<Invoice>(API_ENDPOINTS.invoices.update(id), data, config);
     },
 
     /**
      * Delete invoice
      */
-    async delete(id: string): Promise<void> {
-        return apiClient.delete<void>(API_ENDPOINTS.invoices.delete(id));
+    async delete(id: string, config?: any): Promise<void> {
+        return apiClient.delete<void>(API_ENDPOINTS.invoices.delete(id), config);
     },
 };
 
@@ -241,5 +243,10 @@ export const api = {
     invoices: invoicesService,
     customers: customersService,
     health: healthService,
-    payments: {} as any, // Payments service is in separate file, placeholder for now
+    products: productsApi,
+    payments: paymentsApi,
 };
+
+// Export individual services
+export const productsService = productsApi;
+export const paymentsService = paymentsApi;
