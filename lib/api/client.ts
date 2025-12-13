@@ -249,17 +249,17 @@ class APIClient {
             // Validation error
             if (status === HTTP_STATUS.UNPROCESSABLE_ENTITY) {
                 return new ValidationError(
-                    data.error?.message || 'Validation failed',
-                    data.error?.details as Record<string, string[]>
+                    data.message || 'Validation failed',
+                    data.details as Record<string, string[]>
                 );
             }
 
             // API error
             return new APIClientError(
-                data.error?.message || 'An error occurred',
+                data.message || 'An error occurred',
                 status,
-                data.error?.code || 'UNKNOWN_ERROR',
-                data.error?.details
+                data.errorCode || 'UNKNOWN_ERROR',
+                data.details
             );
         }
 

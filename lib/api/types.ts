@@ -12,11 +12,12 @@ export interface APIResponse<T = any> {
 }
 
 export interface APIError {
-    error: {
-        message: string;
-        code: string;
-        details?: any;
-    };
+    success: false;
+    statusCode: number;
+    message: string;
+    errorCode: string;
+    details?: any;
+    timestamp: string;
 }
 
 export interface RequestConfig {
@@ -148,27 +149,94 @@ export interface UpdateInvoiceRequest {
 // ==================== Customer Types ====================
 
 export interface Customer {
-    id: string;
+    id: string | number;
+    uuid?: string;
+    orgId?: number;
+    customerCode?: string;
     name: string;
-    email: string;
+    legalName?: string;
+    gstin?: string;
+    pan?: string;
+    contactPerson?: string;
+    email?: string;
     phone?: string;
-    address?: string;
+    billingAddressLine1?: string;
+    billingAddressLine2?: string;
+    billingCity?: string;
+    billingState?: string;
+    billingPincode?: string;
+    billingCountry?: string;
+    shippingAddressLine1?: string;
+    shippingAddressLine2?: string;
+    shippingCity?: string;
+    shippingState?: string;
+    shippingPincode?: string;
+    shippingCountry?: string;
+    creditLimit?: number;
+    paymentTermsDays?: number;
+    accountId?: number;
+    isActive?: boolean;
+    meta?: Record<string, any>;
     createdAt?: string;
     updatedAt?: string;
+    deletedAt?: string;
+    // UI-only fields for legacy support
+    balance?: number;
+    status?: 'active' | 'inactive';
+    address?: string; // Deprecated, use billing/shipping addresses
 }
 
 export interface CreateCustomerRequest {
+    customerCode?: string;
     name: string;
-    email: string;
+    legalName?: string;
+    gstin?: string;
+    pan?: string;
+    contactPerson?: string;
+    email?: string;
     phone?: string;
-    address?: string;
+    billingAddressLine1?: string;
+    billingAddressLine2?: string;
+    billingCity?: string;
+    billingState?: string;
+    billingPincode?: string;
+    billingCountry?: string;
+    shippingAddressLine1?: string;
+    shippingAddressLine2?: string;
+    shippingCity?: string;
+    shippingState?: string;
+    shippingPincode?: string;
+    shippingCountry?: string;
+    creditLimit?: number;
+    paymentTermsDays?: number;
+    meta?: Record<string, any>;
 }
 
 export interface UpdateCustomerRequest {
+    customerCode?: string;
     name?: string;
+    legalName?: string;
+    gstin?: string;
+    pan?: string;
+    contactPerson?: string;
     email?: string;
     phone?: string;
-    address?: string;
+    billingAddressLine1?: string;
+    billingAddressLine2?: string;
+    billingCity?: string;
+    billingState?: string;
+    billingPincode?: string;
+    billingCountry?: string;
+    shippingAddressLine1?: string;
+    shippingAddressLine2?: string;
+    shippingCity?: string;
+    shippingState?: string;
+    shippingPincode?: string;
+    shippingCountry?: string;
+    creditLimit?: number;
+    paymentTermsDays?: number;
+    isActive?: boolean;
+    meta?: Record<string, any>;
 }
 
 // ==================== Pagination Types ====================
@@ -231,4 +299,130 @@ export class ValidationError extends Error {
         super(message);
         this.name = 'ValidationError';
     }
+}
+
+// ==================== Product Types ====================
+
+export interface ProductCategory {
+    id: string | number;
+    orgId: number;
+    name: string;
+    parentId?: number;
+    description?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Unit {
+    id: string | number;
+    orgId: number;
+    name: string;
+    shortCode: string;
+    unitType: 'quantity' | 'weight' | 'volume' | 'length' | 'area' | 'time' | 'other';
+    baseUnitId?: number;
+    conversionFactor?: string;
+    createdAt?: string;
+}
+
+export interface ProductVariant {
+    id: string | number;
+    productId: number;
+    orgId: number;
+    uuid: string;
+    variantSku: string;
+    variantName?: string;
+    attributes?: Record<string, string>;
+    costPrice?: number;
+    sellingPrice?: number;
+    mrp?: number;
+    barcode?: string;
+    isActive?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
+}
+
+export interface Product {
+    id: string | number;
+    orgId: number;
+    uuid: string;
+    sku: string;
+    name: string;
+    description?: string;
+    categoryId?: number;
+    category?: ProductCategory;
+    hsnCode?: string;
+    sacCode?: string;
+    productType?: 'goods' | 'service';
+    unitId?: number;
+    unit?: Unit;
+    hasVariants?: boolean;
+    trackInventory?: boolean;
+    isActive?: boolean;
+    variants?: ProductVariant[];
+    meta?: Record<string, any>;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
+    // Computed/UI fields
+    stockLevel?: number;
+    lowStock?: boolean;
+}
+
+export interface CreateProductRequest {
+    sku: string;
+    name: string;
+    description?: string;
+    categoryId?: number;
+    hsnCode?: string;
+    sacCode?: string;
+    productType?: 'goods' | 'service';
+    unitId?: number;
+    hasVariants?: boolean;
+    trackInventory?: boolean;
+    meta?: Record<string, any>;
+}
+
+export interface UpdateProductRequest {
+    sku?: string;
+    name?: string;
+    description?: string;
+    categoryId?: number;
+    hsnCode?: string;
+    sacCode?: string;
+    productType?: 'goods' | 'service';
+    unitId?: number;
+    hasVariants?: boolean;
+    trackInventory?: boolean;
+    isActive?: boolean;
+    meta?: Record<string, any>;
+}
+
+export interface StockLocation {
+    id: string | number;
+    orgId: number;
+    uuid: string;
+    name: string;
+    locationType: 'warehouse' | 'store' | 'transit' | 'virtual';
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    isActive?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface StockSummary {
+    id: string | number;
+    orgId: number;
+    productVariantId: number;
+    locationId: number;
+    batchId?: number;
+    quantity: number;
+    reservedQuantity: number;
+    availableQuantity: number;
+    lastMovementId?: number;
+    lastUpdatedAt?: string;
 }

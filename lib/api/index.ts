@@ -1,6 +1,9 @@
 /**
  * API Module - Index
  * Central export point for all API-related functionality
+/**
+ * API Module - Index
+ * Central export point for all API-related functionality
  */
 
 // Configuration
@@ -45,4 +48,4 @@ export { tokenStorage } from './storage';
 export { apiClient } from './client';
 
 // Services
-export { api, authService, userService, ledgerService, healthService } from './services';
+export { api, authService, userService, ledgerService, healthService, productsService } from './services';

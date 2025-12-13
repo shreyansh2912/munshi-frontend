@@ -99,10 +99,17 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  size?: 'small' | 'medium' | 'large';
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, size = 'medium' }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const sizeClasses = {
+    small: 'max-w-sm',
+    medium: 'max-w-md',
+    large: 'max-w-2xl'
+  };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -124,7 +131,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up" style={{ animationDuration: '0.2s' }}>
       <div 
         ref={modalRef}
-        className="bg-white dark:bg-munshi-dark-card w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]"
+        className={`bg-white dark:bg-munshi-dark-card w-full ${sizeClasses[size]} rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]`}
       >
         <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
           <h3 className="text-lg font-heading font-semibold text-munshi-indigo dark:text-white">{title}</h3>

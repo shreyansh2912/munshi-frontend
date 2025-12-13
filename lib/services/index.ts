@@ -8,6 +8,7 @@ import * as userService from './user.service';
 import * as ledgerService from './ledger.service';
 import * as invoicesService from './invoices.service';
 import * as customersService from './customers.service';
+import * as productsService from './products.service';
 
 export {
     authService,
@@ -15,6 +16,7 @@ export {
     ledgerService,
     invoicesService,
     customersService,
+    productsService,
 };
 
 // Default export for convenience
@@ -24,4 +26,5 @@ export default {
     ledger: ledgerService,
     invoices: invoicesService,
     customers: customersService,
+    products: productsService,
 };

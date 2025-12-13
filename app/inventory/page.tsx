@@ -1,10 +1,10 @@
 /**
- * Inventory Page
- * Entry point for the inventory route - delegates to InventoryContainer
+ * Inventory/Products Page
+ * Entry point for products and inventory management
  */
 
-import InventoryContainer from './InventoryContainer';
+import ProductsContainer from './ProductsContainer';
 
 export default function InventoryPage() {
-  return <InventoryContainer />;
+  return <ProductsContainer />;
 }

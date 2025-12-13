@@ -12,6 +12,8 @@ async function getInvoicesData() {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('munshi_access_token')?.value;
 
+    console.log('[Invoices] Access token exists:', !!accessToken);
+
     if (!accessToken) {
       return null;
     }
@@ -21,8 +23,13 @@ async function getInvoicesData() {
     const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ');
     const config = { headers: { Cookie: cookieHeader } };
 
+    console.log('[Invoices] Cookie header length:', cookieHeader.length);
+    console.log('[Invoices] Fetching invoices...');
+
     // Fetch invoices data on server
     const invoices = await api.invoices.list(undefined, config);
+
+    console.log('[Invoices] Data fetched successfully');
 
     return {
       invoices,
