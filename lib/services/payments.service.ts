@@ -1,31 +1,51 @@
 /**
  * Payments Service
+ * API calls for payment operations
  */
 
 import { apiClient } from '@/lib/api/client';
+import type {
+    Payment,
+    CreatePaymentRequest,
+    UpdatePaymentRequest,
+    APIResponse
+} from '@/lib/api/types';
 
-export interface Payment {
-    id: number;
-    uuid: string;
-    paymentNumber: string;
-    paymentType: 'receipt' | 'payment';
-    amount: number;
-    paymentDate: string;
-    status: string;
-}
+export const paymentsService = {
+    /**
+     * List all payments
+     */
+    async list(): Promise<Payment[]> {
+        const response = await apiClient.get<APIResponse<Payment[]>>('/payments');
+        return response.data;
+    },
 
-export const getPayments = () => {
-    return apiClient.get<Payment[]>('/payments');
+    /**
+     * Get a single payment by ID
+     */
+    async getById(id: string | number): Promise<Payment> {
+        const response = await apiClient.get<APIResponse<Payment>>(`/payments/${id}`);
+        return response.data;
+    },
+
+    /**
+     * Create a new payment
+     */
+    async create(data: CreatePaymentRequest): Promise<Payment> {
+        const response = await apiClient.post<APIResponse<Payment>>('/payments', data);
+        return response.data;
+    },
+
+    /**
+     * Update a payment
+     */
+    async update(id: string | number, data: UpdatePaymentRequest): Promise<Payment> {
+        const response = await apiClient.patch<APIResponse<Payment>>(`/payments/${id}`, data);
+        return response.data;
+    },
+
+    // Note: No delete method - payments are permanent records
+    // Users can mark payments as 'cancelled' instead
 };
 
-export const getPayment = (id: string) => {
-    return apiClient.get<Payment>(`/payments/${id}`);
-};
-
-export const createPayment = (data: Partial<Payment>) => {
-    return apiClient.post<Payment>('/payments', data);
-};
-
-export const updatePayment = (id: string, data: Partial<Payment>) => {
-    return apiClient.patch<Payment>(`/payments/${id}`, data);
-};
+export default paymentsService;

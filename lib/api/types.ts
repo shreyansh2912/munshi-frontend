@@ -426,3 +426,72 @@ export interface StockSummary {
     lastMovementId?: number;
     lastUpdatedAt?: string;
 }
+
+// ==================== Payment Types ====================
+
+export interface Payment {
+    id: string | number;
+    uuid: string;
+    orgId: number;
+    paymentNumber: string;
+    paymentType: 'receipt' | 'payment';
+    paymentDate: string;
+    partyType: 'customer' | 'supplier' | 'other';
+    partyId: number;
+    party?: Customer; // Populated relation
+    amount: number;
+    currency?: string;
+    exchangeRate?: string;
+    paymentMethod: 'cash' | 'bank_transfer' | 'upi' | 'card' | 'cheque' | 'dd' | 'other';
+    bankAccountId?: number;
+    referenceNumber?: string;
+    chequeNumber?: string;
+    chequeDate?: string;
+    upiTransactionId?: string;
+    notes?: string;
+    status: 'pending' | 'cleared' | 'bounced' | 'cancelled';
+    clearedAt?: string;
+    createdBy: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreatePaymentRequest {
+    paymentNumber: string;
+    paymentType: 'receipt' | 'payment';
+    paymentDate: string;
+    partyType: 'customer' | 'supplier' | 'other';
+    partyId: number;
+    amount: number;
+    currency?: string;
+    exchangeRate?: string;
+    paymentMethod: 'cash' | 'bank_transfer' | 'upi' | 'card' | 'cheque' | 'dd' | 'other';
+    bankAccountId?: number;
+    referenceNumber?: string;
+    chequeNumber?: string;
+    chequeDate?: string;
+    upiTransactionId?: string;
+    notes?: string;
+    status?: 'pending' | 'cleared' | 'bounced' | 'cancelled';
+    clearedAt?: string;
+}
+
+export interface UpdatePaymentRequest {
+    paymentNumber?: string;
+    paymentType?: 'receipt' | 'payment';
+    paymentDate?: string;
+    partyType?: 'customer' | 'supplier' | 'other';
+    partyId?: number;
+    amount?: number;
+    currency?: string;
+    exchangeRate?: string;
+    paymentMethod?: 'cash' | 'bank_transfer' | 'upi' | 'card' | 'cheque' | 'dd' | 'other';
+    bankAccountId?: number;
+    referenceNumber?: string;
+    chequeNumber?: string;
+    chequeDate?: string;
+    upiTransactionId?: string;
+    notes?: string;
+    status?: 'pending' | 'cleared' | 'bounced' | 'cancelled';
+    clearedAt?: string;
+}

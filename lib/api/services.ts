@@ -241,4 +241,5 @@ export const api = {
     invoices: invoicesService,
     customers: customersService,
     health: healthService,
+    payments: {} as any, // Payments service is in separate file, placeholder for now
 };

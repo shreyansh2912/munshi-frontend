@@ -9,6 +9,7 @@ import * as ledgerService from './ledger.service';
 import * as invoicesService from './invoices.service';
 import * as customersService from './customers.service';
 import * as productsService from './products.service';
+import * as paymentsService from './payments.service';
 
 export {
     authService,
@@ -17,6 +18,7 @@ export {
     invoicesService,
     customersService,
     productsService,
+    paymentsService,
 };
 
 // Default export for convenience
@@ -27,4 +29,5 @@ export default {
     invoices: invoicesService,
     customers: customersService,
     products: productsService,
+    payments: paymentsService,
 };
