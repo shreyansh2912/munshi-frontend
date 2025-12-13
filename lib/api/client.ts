@@ -67,6 +67,7 @@ class APIClient {
             baseURL: API_CONFIG.baseURL,
             timeout: API_CONFIG.timeout,
             headers: API_CONFIG.defaultHeaders,
+            withCredentials: true,
         });
 
         this.setupInterceptors();
@@ -80,10 +81,10 @@ class APIClient {
         this.axiosInstance.interceptors.request.use(
             (config) => {
                 // Add auth token
-                const token = tokenStorage.getAccessToken();
-                if (token && !config.headers['skip-auth']) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
+                // const token = tokenStorage.getAccessToken();
+                // if (token && !config.headers['skip-auth']) {
+                //     config.headers.Authorization = `Bearer ${token}`;
+                // }
 
                 // Add device ID for session tracking
                 const deviceId = tokenStorage.getDeviceId();
@@ -132,13 +133,29 @@ class APIClient {
                     throw new NetworkError('Network error. Please check your connection.');
                 }
 
+                // Skip auto-refresh if request has skip-auth header or already retried
+                const shouldSkipRefresh =
+                    originalRequest.headers?.['skip-auth'] === 'true' ||
+                    originalRequest._retry;
+
                 // Handle 401 Unauthorized - Token refresh
-                if (error.response.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
+                if (error.response.status === HTTP_STATUS.UNAUTHORIZED && !shouldSkipRefresh) {
+                    // Only attempt auto-refresh on client-side
+                    if (typeof window === 'undefined') {
+                        // Server-side: Don't auto-refresh, just throw error
+                        throw this.transformError(error as AxiosError<APIError>);
+                    }
+
                     if (this.isRefreshing) {
                         // Wait for token refresh to complete
                         return new Promise((resolve) => {
-                            this.refreshSubscribers.push((token: string) => {
-                                originalRequest.headers!.Authorization = `Bearer ${token}`;
+                            this.refreshSubscribers.push((newCookie: string) => {
+                                if (newCookie) {
+                                    if (!originalRequest.headers) {
+                                        originalRequest.headers = {};
+                                    }
+                                    originalRequest.headers['Cookie'] = newCookie;
+                                }
                                 resolve(this.axiosInstance(originalRequest));
                             });
                         });
@@ -148,34 +165,65 @@ class APIClient {
                     this.isRefreshing = true;
 
                     try {
-                        const refreshToken = tokenStorage.getRefreshToken();
-                        if (!refreshToken) {
-                            throw new AuthenticationError('No refresh token available');
+                        // Refresh token - cookie based
+                        if (!originalRequest.headers) {
+                            originalRequest.headers = {};
+                        }
+                        const cookieHeader = originalRequest.headers['Cookie'] || originalRequest.headers['cookie'];
+                        const refreshHeaders: Record<string, string> = { 'skip-auth': 'true' };
+                        if (cookieHeader) {
+                            refreshHeaders['Cookie'] = cookieHeader.toString();
                         }
 
-                        // Refresh token
-                        const response = await this.axiosInstance.post<APIResponse<{ accessToken: string; refreshToken: string }>>(
+                        if (API_CONFIG.enableLogging) {
+                            console.log('[API Refresh] Attempting refresh with headers:', refreshHeaders);
+                            console.log('[API Refresh] Endpoint:', API_ENDPOINTS.auth.refresh);
+                        }
+
+                        const refreshResponse = await this.axiosInstance.post(
                             API_ENDPOINTS.auth.refresh,
-                            { refreshToken },
-                            { headers: { 'skip-auth': 'true' } }
+                            {},
+                            { headers: refreshHeaders }
                         );
 
-                        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+                        // Update cookies for retry (Server-Side Fix)
+                        const setCookie = refreshResponse.headers['set-cookie'];
+                        let currentCookie = (originalRequest.headers['Cookie'] as string) || '';
 
-                        // Store new tokens
-                        tokenStorage.setAccessToken(accessToken);
-                        tokenStorage.setRefreshToken(newRefreshToken);
+                        if (API_CONFIG.enableLogging) {
+                            console.log('[API Refresh] Set-Cookie headers:', setCookie);
+                        }
 
-                        // Retry all pending requests
-                        this.refreshSubscribers.forEach((callback) => callback(accessToken));
+                        if (setCookie && Array.isArray(setCookie)) {
+                            const newCookies = setCookie.map(c => c.split(';')[0]); // Get name=value parts
+
+                            newCookies.forEach(newCookie => {
+                                const [name] = newCookie.split('=');
+                                if (currentCookie.includes(`${name}=`)) {
+                                    // Replace existing cookie value using regex to match name=value until semicolon or end of string
+                                    currentCookie = currentCookie.replace(new RegExp(`${name}=[^;]+`), newCookie);
+                                } else {
+                                    // Append new cookie
+                                    currentCookie = currentCookie ? `${currentCookie}; ${newCookie}` : newCookie;
+                                }
+                            });
+
+                            if (API_CONFIG.enableLogging) {
+                                console.log('[API Refresh] Updated Cookie header:', currentCookie);
+                            }
+
+                            originalRequest.headers['Cookie'] = currentCookie;
+                        }
+
+                        // Retry all pending requests with new cookies
+                        this.refreshSubscribers.forEach((callback) => callback(currentCookie));
                         this.refreshSubscribers = [];
 
                         // Retry original request
-                        originalRequest.headers!.Authorization = `Bearer ${accessToken}`;
                         return this.axiosInstance(originalRequest);
                     } catch (refreshError) {
-                        // Clear auth and redirect to login
                         tokenStorage.clearAuth();
+                        // Only redirect on client-side
                         if (typeof window !== 'undefined') {
                             window.location.href = '/login';
                         }
@@ -186,7 +234,7 @@ class APIClient {
                 }
 
                 // Transform error
-                throw this.transformError(error);
+                throw this.transformError(error as AxiosError<APIError>);
             }
         );
     }
@@ -226,7 +274,7 @@ class APIClient {
         config: AxiosRequestConfig,
         customConfig?: RequestConfig
     ): Promise<T> {
-        const { skipRetry = false, timeout, headers } = customConfig || {};
+        const { skipRetry = false, skipAuth = false, timeout, headers } = customConfig || {};
 
         const requestConfig: AxiosRequestConfig = {
             ...config,
@@ -234,6 +282,7 @@ class APIClient {
             headers: {
                 ...config.headers,
                 ...headers,
+                ...(skipAuth ? { 'skip-auth': 'true' } : {}),
             },
         };
 

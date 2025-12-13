@@ -75,18 +75,20 @@ export const Badge: React.FC<{ children: React.ReactNode, variant?: 'success' | 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   icon?: React.ReactNode;
+  error?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ label, icon, className = '', ...props }) => (
+export const Input: React.FC<InputProps> = ({ label, icon, error, className = '', ...props }) => (
   <div className="w-full">
     {label && <label className="block text-sm font-medium text-munshi-subtext dark:text-zinc-400 mb-1.5">{label}</label>}
     <div className="relative">
       {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-600">{icon}</div>}
       <input 
-        className={`w-full bg-white dark:bg-black border border-gray-200 dark:border-munshi-dark-border rounded-lg px-4 py-2.5 text-munshi-text dark:text-gray-100 focus:border-munshi-indigo focus:ring-1 focus:ring-munshi-indigo dark:focus:ring-zinc-600 dark:focus:border-zinc-600 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-700 ${icon ? 'pl-10' : ''} ${className}`}
+        className={`w-full bg-white dark:bg-black border ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-munshi-dark-border focus:border-munshi-indigo focus:ring-munshi-indigo dark:focus:ring-zinc-600 dark:focus:border-zinc-600'} rounded-lg px-4 py-2.5 text-munshi-text dark:text-gray-100 focus:ring-1 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-700 ${icon ? 'pl-10' : ''} ${className}`}
         {...props}
       />
     </div>
+    {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
   </div>
 );
 

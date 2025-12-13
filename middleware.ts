@@ -65,8 +65,14 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
+    // Debug logging
+    console.log(`[Middleware] Processing ${pathname}`);
+    console.log(`[Middleware] Cookies:`, request.cookies.getAll().map(c => c.name));
+    const isAuth = isAuthenticated(request);
+    console.log(`[Middleware] Is Authenticated: ${isAuth}`);
+
     // Check authentication for protected routes
-    if (!isAuthenticated(request)) {
+    if (!isAuth) {
         // Store the attempted URL for redirect after login
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('redirect', pathname);

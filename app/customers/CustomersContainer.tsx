@@ -17,7 +17,12 @@ async function getCustomersData() {
     }
 
     // Fetch customers data on server
-    const customers = await api.customers.list();
+    // Prepare headers for server-side API calls
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ');
+    const config = { headers: { Cookie: cookieHeader } };
+
+    const customers = await api.customers.list(undefined, config);
 
     return {
       customers,

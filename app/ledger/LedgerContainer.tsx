@@ -17,7 +17,12 @@ async function getLedgerData() {
     }
 
     // Fetch ledger accounts on server
-    const ledgerAccounts = await api.ledger.list();
+    // Prepare headers for server-side API calls
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ');
+    const config = { headers: { Cookie: cookieHeader } };
+
+    const ledgerAccounts = await api.ledger.list(undefined, config);
 
     return {
       ledgerAccounts,

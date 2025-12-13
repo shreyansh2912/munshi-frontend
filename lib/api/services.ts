@@ -21,6 +21,7 @@ import type {
     CreateCustomerRequest,
     UpdateCustomerRequest,
     PaginatedResponse,
+    RequestConfig,
 } from './types';
 
 // ============================================================================
@@ -71,8 +72,8 @@ export const userService = {
     /**
      * Get current user profile
      */
-    async getProfile(): Promise<User> {
-        return apiClient.get<User>(API_ENDPOINTS.user.me);
+    async getProfile(config?: RequestConfig): Promise<User> {
+        return apiClient.get<User>(API_ENDPOINTS.user.me, undefined, config);
     },
 
     /**
@@ -98,8 +99,8 @@ export const ledgerService = {
     /**
      * List all ledger accounts
      */
-    async list(params?: { type?: string; search?: string }): Promise<LedgerAccount[]> {
-        return apiClient.get<LedgerAccount[]>(API_ENDPOINTS.ledger.list, params);
+    async list(params?: { type?: string; search?: string }, config?: RequestConfig): Promise<LedgerAccount[]> {
+        return apiClient.get<LedgerAccount[]>(API_ENDPOINTS.ledger.list, params, config);
     },
 
     /**
@@ -180,8 +181,8 @@ export const customersService = {
     /**
      * List all customers
      */
-    async list(params?: { status?: string; search?: string }): Promise<Customer[]> {
-        return apiClient.get<Customer[]>(API_ENDPOINTS.customers.list, params);
+    async list(params?: { status?: string; search?: string }, config?: RequestConfig): Promise<Customer[]> {
+        return apiClient.get<Customer[]>(API_ENDPOINTS.customers.list, params, config);
     },
 
     /**

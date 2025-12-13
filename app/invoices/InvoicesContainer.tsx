@@ -16,8 +16,13 @@ async function getInvoicesData() {
       return null;
     }
 
+    // Prepare headers for server-side API calls
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ');
+    const config = { headers: { Cookie: cookieHeader } };
+
     // Fetch invoices data on server
-    const invoices = await api?.invoices?.list();
+    const invoices = await api.invoices.list(undefined, config);
 
     return {
       invoices,
