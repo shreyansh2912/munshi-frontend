@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -8,22 +8,27 @@ import {
   Bell, Search, Sparkles, Moon, Sun, ChevronDown, Check, Plus, Building2, Menu
 } from 'lucide-react';
 import { NAV_LINKS } from '@/lib/constants';
-import { useOrganization } from '@/components/providers/OrganizationProvider';
+import { useOrganizationsStore } from '@/lib/stores';
 import { Button, Input, Modal } from '@/components/ui/UI';
 import { Logo } from '@/components/ui/Logo';
 
 const Sidebar: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { currentOrg, organizations, setCurrentOrg, createOrganization } = useOrganization();
+  const { currentOrg, organizations, setCurrentOrganization, createOrganization, fetchOrganizations } = useOrganizationsStore();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
 
-  const handleCreateOrg = () => {
+  // Fetch organizations on mount
+  useEffect(() => {
+    fetchOrganizations();
+  }, [fetchOrganizations]);
+
+  const handleCreateOrg = async () => {
     if (newOrgName.trim()) {
-      createOrganization(newOrgName);
+      await createOrganization(newOrgName);
       setNewOrgName('');
       setIsCreateModalOpen(false);
     }
@@ -56,11 +61,11 @@ const Sidebar: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOpen, o
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-munshi-indigo dark:bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                 {currentOrg.name.charAt(0)}
+                 {currentOrg?.name?.charAt(0) || 'O'}
               </div>
               <div className="flex flex-col items-start overflow-hidden">
-                <span className="text-sm font-bold text-munshi-indigo dark:text-gray-100 truncate w-32">{currentOrg.name}</span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">{currentOrg.plan} Plan</span>
+                <span className="text-sm font-bold text-munshi-indigo dark:text-gray-100 truncate w-32">{currentOrg?.name || 'Loading...'}</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">{currentOrg?.plan || 'free'} Plan</span>
               </div>
             </div>
             <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -75,7 +80,7 @@ const Sidebar: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOpen, o
                   <button 
                     key={org.id}
                     onClick={() => {
-                      setCurrentOrg(org);
+                      setCurrentOrganization(org);
                       setIsDropdownOpen(false);
                     }}
                     className="w-full flex items-center justify-between px-2 py-2 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 text-munshi-text dark:text-gray-200"
@@ -84,7 +89,7 @@ const Sidebar: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOpen, o
                        <Building2 size={14} className="text-gray-400"/>
                        <span className="truncate w-32 text-left">{org.name}</span>
                     </div>
-                    {currentOrg.id === org.id && <Check size={14} className="text-munshi-teal" />}
+                    {currentOrg?.id === org.id && <Check size={14} className="text-munshi-teal" />}
                   </button>
                 ))}
               </div>

@@ -1,16 +1,16 @@
 /**
  * Dashboard Scene (Client Component)
- * Handles UI interactions and state management
+ * Handles UI interactions and state management with real API data
  */
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, AISuggestionBox, Modal, Input } from '@/components/ui/UI';
 import { RevenueChart, ExpenseBarChart } from '@/components/charts/Charts';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { ArrowUpRight, ArrowDownRight, MoreHorizontal, Download, Plus, DollarSign, Tag, FileText } from 'lucide-react';
-import { MOCK_ACCOUNTS } from '@/lib/constants';
+import { ArrowUpRight, ArrowDownRight, MoreHorizontal, Download, Plus, DollarSign, Tag, FileText, Loader2 } from 'lucide-react';
+import { useDashboardStore, useBankingStore } from '@/lib/stores';
 import type { User, LedgerAccount } from '@/lib/api';
 
 interface DashboardSceneProps {
@@ -20,8 +20,8 @@ interface DashboardSceneProps {
   };
 }
 
-const MetricCard: React.FC<{ title: string, value: string, trend: string, isPositive: boolean, caption: string }> = ({ 
-  title, value, trend, isPositive, caption 
+const MetricCard: React.FC<{ title: string, value: string, trend: string, isPositive: boolean, caption: string, isLoading?: boolean }> = ({ 
+  title, value, trend, isPositive, caption, isLoading 
 }) => (
   <Card className="p-6">
     <div className="flex justify-between items-start mb-4">
@@ -31,14 +31,40 @@ const MetricCard: React.FC<{ title: string, value: string, trend: string, isPosi
         {trend}
       </div>
     </div>
-    <h3 className="text-3xl font-mono font-medium text-munshi-indigo dark:text-gray-100 mb-1">{value}</h3>
-    <p className="text-xs text-gray-400 dark:text-zinc-500">{caption}</p>
+    {isLoading ? (
+      <div className="flex items-center gap-2">
+        <Loader2 size={24} className="animate-spin text-munshi-indigo" />
+        <span className="text-sm text-gray-400">Loading...</span>
+      </div>
+    ) : (
+      <>
+        <h3 className="text-3xl font-mono font-medium text-munshi-indigo dark:text-gray-100 mb-1">{value}</h3>
+        <p className="text-xs text-gray-400 dark:text-zinc-500">{caption}</p>
+      </>
+    )}
   </Card>
 );
 
 export default function DashboardScene({ initialData }: DashboardSceneProps) {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const { user, ledgerAccounts } = initialData;
+  const { user } = initialData;
+  
+  // Dashboard store
+  const { metrics, recentActivity, isLoading: isDashboardLoading, fetchAll } = useDashboardStore();
+  
+  // Banking store
+  const { accounts: bankAccounts, fetchAccounts, isLoading: isBankingLoading } = useBankingStore();
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchAll();
+    fetchAccounts();
+  }, [fetchAll, fetchAccounts]);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
 
   return (
     <AppLayout>
@@ -55,9 +81,30 @@ export default function DashboardScene({ initialData }: DashboardSceneProps) {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <MetricCard title="Total Revenue" value="₹24,50,000" trend="+12.5%" isPositive={true} caption="vs last month" />
-        <MetricCard title="Total Expenses" value="₹8,20,400" trend="+4.2%" isPositive={false} caption="vs last month" />
-        <MetricCard title="Net Profit" value="₹16,29,600" trend="+18.2%" isPositive={true} caption="vs last month" />
+        <MetricCard 
+          title="Total Revenue" 
+          value={metrics ? formatCurrency(metrics.totalRevenue) : '...'} 
+          trend={metrics?.revenueTrend || '...'}
+          isPositive={true} 
+          caption="vs last month"
+          isLoading={isDashboardLoading}
+        />
+        <MetricCard 
+          title="Total Expenses" 
+          value={metrics ? formatCurrency(metrics.totalExpenses) : '...'} 
+          trend={metrics?.expensesTrend || '...'}
+          isPositive={false} 
+          caption="vs last month"
+          isLoading={isDashboardLoading}
+        />
+        <MetricCard 
+          title="Net Profit" 
+          value={metrics ? formatCurrency(metrics.netProfit) : '...'} 
+          trend={metrics?.profitTrend || '...'}
+          isPositive={true} 
+          caption="vs last month"
+          isLoading={isDashboardLoading}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -80,23 +127,37 @@ export default function DashboardScene({ initialData }: DashboardSceneProps) {
                 <h3 className="text-lg font-heading font-semibold text-munshi-indigo dark:text-gray-200">Recent Activity</h3>
                 <Button variant="ghost" size="sm">View All</Button>
              </div>
-             <div className="space-y-0">
-                {[1,2,3].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-4 border-b border-gray-50 dark:border-zinc-800 last:border-0 hover:bg-gray-50 dark:hover:bg-zinc-900 px-2 rounded-lg transition-colors">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-munshi-indigo/5 dark:bg-zinc-800 flex items-center justify-center text-munshi-indigo dark:text-white text-xs font-bold">TX</div>
-                            <div>
-                                <p className="text-sm font-medium text-munshi-text dark:text-gray-200">TechSpace Rentals Pvt Ltd</p>
-                                <p className="text-xs text-gray-400">Office Rent • 24 Oct</p>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                             <p className="text-sm font-mono font-medium text-munshi-text dark:text-gray-200">- ₹45,000</p>
-                             <Badge variant="success">Cleared</Badge>
-                        </div>
-                    </div>
-                ))}
-             </div>
+             {isDashboardLoading ? (
+               <div className="flex justify-center py-8">
+                 <Loader2 size={32} className="animate-spin text-munshi-indigo" />
+               </div>
+             ) : recentActivity.length === 0 ? (
+               <div className="text-center py-8 text-gray-400">
+                 <p>No recent activity</p>
+               </div>
+             ) : (
+               <div className="space-y-0">
+                  {recentActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between py-4 border-b border-gray-50 dark:border-zinc-800 last:border-0 hover:bg-gray-50 dark:hover:bg-zinc-900 px-2 rounded-lg transition-colors">
+                          <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-munshi-indigo/5 dark:bg-zinc-800 flex items-center justify-center text-munshi-indigo dark:text-white text-xs font-bold">
+                                {activity.description.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                  <p className="text-sm font-medium text-munshi-text dark:text-gray-200">{activity.description}</p>
+                                  <p className="text-xs text-gray-400">{activity.category} • {activity.date}</p>
+                              </div>
+                          </div>
+                          <div className="text-right">
+                               <p className="text-sm font-mono font-medium text-munshi-text dark:text-gray-200">
+                                 {activity.type === 'credit' ? '+' : '-'} {formatCurrency(activity.amount)}
+                               </p>
+                               <Badge variant={activity.status === 'cleared' ? 'success' : 'default'}>{activity.status}</Badge>
+                          </div>
+                      </div>
+                  ))}
+               </div>
+             )}
           </Card>
         </div>
 
@@ -111,19 +172,30 @@ export default function DashboardScene({ initialData }: DashboardSceneProps) {
 
           <Card className="p-6">
              <h3 className="text-lg font-heading font-semibold text-munshi-indigo dark:text-gray-200 mb-4">Bank Accounts</h3>
-             <div className="space-y-4">
-                {MOCK_ACCOUNTS.map(acc => (
-                    <div key={acc.id} className="p-4 border border-gray-100 dark:border-zinc-800 rounded-xl hover:border-munshi-indigo/30 dark:hover:border-zinc-600 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                             <p className="text-sm font-medium text-munshi-text dark:text-gray-200">{acc.bankName}</p>
-                             <span className={`w-2 h-2 rounded-full ${acc.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                        </div>
-                        <p className="text-xs text-gray-400 mb-2">{acc.accountNumber}</p>
-                        <p className="text-lg font-mono text-munshi-indigo dark:text-white font-medium">₹{acc.balance.toLocaleString('en-IN')}</p>
-                    </div>
-                ))}
-                <Button variant="outline" className="w-full text-sm border-dashed">Connect New Account</Button>
-             </div>
+             {isBankingLoading ? (
+               <div className="flex justify-center py-4">
+                 <Loader2 size={24} className="animate-spin text-munshi-indigo" />
+               </div>
+             ) : bankAccounts.length === 0 ? (
+               <div className="text-center py-4">
+                 <p className="text-sm text-gray-400 mb-4">No bank accounts connected</p>
+                 <Button variant="outline" className="w-full text-sm border-dashed">Connect Bank Account</Button>
+               </div>
+             ) : (
+               <div className="space-y-4">
+                  {bankAccounts.map(acc => (
+                      <div key={acc.id} className="p-4 border border-gray-100 dark:border-zinc-800 rounded-xl hover:border-munshi-indigo/30 dark:hover:border-zinc-600 transition-colors">
+                          <div className="flex justify-between items-start mb-2">
+                               <p className="text-sm font-medium text-munshi-text dark:text-gray-200">{acc.bankName}</p>
+                               <span className={`w-2 h-2 rounded-full ${acc.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          </div>
+                          <p className="text-xs text-gray-400 mb-2">{acc.accountNumber}</p>
+                          <p className="text-lg font-mono text-munshi-indigo dark:text-white font-medium">{formatCurrency(acc.balance)}</p>
+                      </div>
+                  ))}
+                  <Button variant="outline" className="w-full text-sm border-dashed">Connect New Account</Button>
+               </div>
+             )}
           </Card>
 
           <Card className="p-6 bg-munshi-indigo dark:bg-zinc-900 text-white">
@@ -184,9 +256,10 @@ export default function DashboardScene({ initialData }: DashboardSceneProps) {
             <div>
                <label className="block text-sm font-medium text-munshi-subtext dark:text-zinc-400 mb-1.5">Payment Method</label>
                <select className="w-full bg-white dark:bg-black border border-gray-200 dark:border-munshi-dark-border rounded-lg px-4 py-2.5 text-munshi-text dark:text-gray-100 outline-none">
-                  <option>HDFC Bank **** 4589</option>
-                  <option>ICICI Bank **** 9921</option>
                   <option>Cash</option>
+                  {bankAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.bankName} {acc.accountNumber}</option>
+                  ))}
                </select>
             </div>
          </div>

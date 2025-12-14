@@ -3,8 +3,10 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, Button, Badge } from '@/components/ui/UI';
-import { MOCK_ACCOUNTS } from '@/lib/constants';
 import { Plus, RefreshCw, Download, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+
+// TODO: Fetch accounts from API
+const MOCK_ACCOUNTS: any[] = [];
 
 export default function BankingPage() {
   return (

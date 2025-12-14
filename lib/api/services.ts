@@ -217,6 +217,47 @@ export const customersService = {
 };
 
 // ============================================================================
+// Organizations Service
+// ============================================================================
+
+export const organizationsService = {
+    /**
+     * Create new organization
+     */
+    async create(data: { name: string;[key: string]: any }): Promise<any> {
+        return apiClient.post<any>(API_ENDPOINTS.organizations.create, data);
+    },
+
+    /**
+     * List user's organizations
+     */
+    async list(config?: RequestConfig): Promise<any[]> {
+        return apiClient.get<any[]>(API_ENDPOINTS.organizations.list, undefined, config);
+    },
+
+    /**
+     * Get current organization
+     */
+    async getCurrent(config?: RequestConfig): Promise<any> {
+        return apiClient.get<any>(API_ENDPOINTS.organizations.current, undefined, config);
+    },
+
+    /**
+     * Update organization
+     */
+    async update(id: string, data: { name?: string;[key: string]: any }): Promise<any> {
+        return apiClient.patch<any>(API_ENDPOINTS.organizations.update(id), data);
+    },
+
+    /**
+     * Switch to another organization
+     */
+    async switch(id: string): Promise<any> {
+        return apiClient.post<any>(API_ENDPOINTS.organizations.switch(id));
+    },
+};
+
+// ============================================================================
 // Health Service
 // ============================================================================
 
@@ -242,6 +283,7 @@ export const api = {
     ledger: ledgerService,
     invoices: invoicesService,
     customers: customersService,
+    organizations: organizationsService,
     health: healthService,
     products: productsApi,
     payments: paymentsApi,

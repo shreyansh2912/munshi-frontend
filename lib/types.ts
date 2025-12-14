@@ -4,4 +4,4 @@
  */
 
 // Re-export all types from central types file
-export * from './types';
+export * from './types/index';

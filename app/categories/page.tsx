@@ -3,12 +3,11 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, Button, Badge, Input, Modal } from '@/components/ui/UI';
-import { MOCK_CATEGORIES } from '@/lib/constants';
 import { Plus, TrendingUp, TrendingDown, Edit2, Trash2 } from 'lucide-react';
 import { Category } from '@/lib/types';
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 

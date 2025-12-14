@@ -81,10 +81,10 @@ class APIClient {
         this.axiosInstance.interceptors.request.use(
             (config) => {
                 // Add auth token
-                // const token = tokenStorage.getAccessToken();
-                // if (token && !config.headers['skip-auth']) {
-                //     config.headers.Authorization = `Bearer ${token}`;
-                // }
+                const token = tokenStorage.getAccessToken();
+                if (token && !config.headers['skip-auth']) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
 
                 // Add device ID for session tracking
                 const deviceId = tokenStorage.getDeviceId();
