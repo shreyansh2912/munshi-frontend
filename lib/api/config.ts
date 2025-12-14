@@ -83,6 +83,36 @@ export const API_ENDPOINTS = {
         delete: (id: string) => `/customers/${id}`,
     },
 
+    // Products
+    products: {
+        list: '/products',
+        create: '/products',
+        get: (id: string) => `/products/${id}`,
+        update: (id: string) => `/products/${id}`,
+        delete: (id: string) => `/products/${id}`,
+        categories: '/products/categories',
+        units: '/products/units',
+    },
+
+    // Payments
+    payments: {
+        list: '/payments',
+        create: '/payments',
+        get: (id: string) => `/payments/${id}`,
+        update: (id: string) => `/payments/${id}`,
+        delete: (id: string) => `/payments/${id}`,
+        allocations: (id: string) => `/payments/${id}/allocations`,
+    },
+
+    // Organizations
+    organizations: {
+        list: '/organizations',
+        create: '/organizations',
+        current: '/organizations/current',
+        update: (id: string) => `/organizations/${id}`,
+        switch: (id: string) => `/organizations/${id}/switch`,
+    },
+
     // Health
     health: '/health',
 } as const;

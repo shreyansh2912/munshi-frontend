@@ -108,18 +108,118 @@ export interface UpdateLedgerRequest {
 
 // ==================== Invoice Types ====================
 
-export interface InvoiceItem {
-    id?: string;
-    tax?: number;
-    dueDate: string;
+/**
+ * Invoice Tax Line
+ */
+export interface InvoiceTaxLine {
+    id?: string | number;
+    invoiceItemId: number;
+    orgId: number;
+    taxRateId: number;
+    taxType: 'CGST' | 'SGST' | 'IGST' | 'CESS' | 'TDS' | 'TCS';
+    taxRate: number;
+    taxableAmount: number;
+    taxAmount: number;
+    createdAt?: string;
 }
 
-export interface UpdateInvoiceRequest {
-    customerId?: string;
-    items?: InvoiceItem[];
-    tax?: number;
+/**
+ * Invoice Item
+ */
+export interface InvoiceItem {
+    id?: string | number;
+    invoiceId?: number;
+    orgId?: number;
+    lineNumber: number;
+    productVariantId?: number;
+    description: string;
+    hsnCode?: string;
+    sacCode?: string;
+    quantity: number;
+    unitId?: number;
+    unitPrice: number;
+    discountPercent?: number;
+    discountAmount?: number;
+    taxableAmount: number;
+    isTaxInclusive?: boolean;
+    taxLines?: InvoiceTaxLine[];
+    createdAt?: string;
+}
+
+/**
+ * Invoice
+ */
+export interface Invoice {
+    id: string | number;
+    orgId: number;
+    uuid: string;
+    invoiceNumber: string;
+    invoiceType?: 'tax_invoice' | 'proforma' | 'credit_note' | 'debit_note' | 'export_invoice';
+    customerId: number;
+    customer?: Customer;
+    invoiceDate: string;
     dueDate?: string;
-    status?: string;
+    placeOfSupply?: string;
+    isReverseCharge?: boolean;
+    isExport?: boolean;
+    exportType?: 'with_payment' | 'without_payment' | 'deemed_export';
+    shippingBillNumber?: string;
+    shippingBillDate?: string;
+    portCode?: string;
+    currency?: string;
+    exchangeRate?: string;
+    subtotal: number;
+    discountAmount?: number;
+    taxableAmount: number;
+    taxAmount: number;
+    roundOff?: number;
+    totalAmount: number;
+    amountPaid?: number;
+    balanceDue?: number;
+    status?: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled' | 'void';
+    paymentStatus?: 'unpaid' | 'partially_paid' | 'paid';
+    notes?: string;
+    termsAndConditions?: string;
+    items?: InvoiceItem[];
+    createdBy?: string;
+    sentAt?: string;
+    paidAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+/**
+ * Create Invoice Request
+ */
+export interface CreateInvoiceRequest {
+    invoiceNumber?: string;
+    invoiceType?: 'tax_invoice' | 'proforma' | 'credit_note' | 'debit_note' | 'export_invoice';
+    customerId: number;
+    invoiceDate: string;
+    dueDate?: string;
+    placeOfSupply?: string;
+    isReverseCharge?: boolean;
+    isExport?: boolean;
+    exportType?: 'with_payment' | 'without_payment' | 'deemed_export';
+    currency?: string;
+    items: Omit<InvoiceItem, 'id' | 'invoiceId' | 'orgId' | 'createdAt'>[];
+    notes?: string;
+    termsAndConditions?: string;
+}
+
+/**
+ * Update Invoice Request
+ */
+export interface UpdateInvoiceRequest {
+    invoiceNumber?: string;
+    customerId?: number;
+    invoiceDate?: string;
+    dueDate?: string;
+    placeOfSupply?: string;
+    items?: Omit<InvoiceItem, 'id' | 'invoiceId' | 'orgId' | 'createdAt'>[];
+    status?: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled' | 'void';
+    notes?: string;
+    termsAndConditions?: string;
 }
 
 // ==================== Customer Types ====================

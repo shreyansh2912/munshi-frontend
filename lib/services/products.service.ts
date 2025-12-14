@@ -56,16 +56,16 @@ export const productsService = {
     // Category management
     categories: {
         async list(): Promise<ProductCategory[]> {
-            // TODO: Implement when backend endpoint is ready
-            return [];
+            const response = await apiClient.get<APIResponse<ProductCategory[]>>('/products/categories');
+            return response.data;
         },
     },
 
     // Unit management
     units: {
         async list(): Promise<Unit[]> {
-            // TODO: Implement when backend endpoint is ready
-            return [];
+            const response = await apiClient.get<APIResponse<Unit[]>>('/products/units');
+            return response.data;
         },
     },
 };

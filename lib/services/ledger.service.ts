@@ -5,39 +5,57 @@
 
 import { apiClient } from '@/lib/api/client';
 import { API_ENDPOINTS } from '@/lib/api/config';
-import type { LedgerAccount, CreateLedgerRequest, UpdateLedgerRequest } from '@/lib/api/types';
+import type { LedgerAccount, CreateLedgerRequest, UpdateLedgerRequest, APIResponse } from '@/lib/api/types';
 
 /**
- * List all ledger accounts
+ * Ledger Service Object
  */
-export const list = (params?: { type?: string; search?: string }) => {
-    return apiClient.get<LedgerAccount[]>(API_ENDPOINTS.ledger.list, params);
+export const ledgerService = {
+    /**
+     * List all ledger accounts
+     */
+    async list(params?: { type?: string; search?: string }): Promise<LedgerAccount[]> {
+        const response = await apiClient.get<APIResponse<LedgerAccount[]>>(API_ENDPOINTS.ledger.list, params);
+        return response.data;
+    },
+
+    /**
+     * Get ledger account by ID
+     */
+    async getById(id: string): Promise<LedgerAccount> {
+        const response = await apiClient.get<APIResponse<LedgerAccount>>(API_ENDPOINTS.ledger.get(id));
+        return response.data;
+    },
+
+    /**
+     * Create new ledger account
+     */
+    async create(data: CreateLedgerRequest): Promise<LedgerAccount> {
+        const response = await apiClient.post<APIResponse<LedgerAccount>>(API_ENDPOINTS.ledger.create, data);
+        return response.data;
+    },
+
+    /**
+     * Update ledger account
+     */
+    async update(id: string, data: UpdateLedgerRequest): Promise<LedgerAccount> {
+        const response = await apiClient.patch<APIResponse<LedgerAccount>>(API_ENDPOINTS.ledger.update(id), data);
+        return response.data;
+    },
+
+    /**
+     * Delete ledger account
+     */
+    async delete(id: string): Promise<void> {
+        await apiClient.delete<void>(API_ENDPOINTS.ledger.delete(id));
+    },
 };
 
-/**
- * Get ledger account by ID
- */
-export const get = (id: string) => {
-    return apiClient.get<LedgerAccount>(API_ENDPOINTS.ledger.get(id));
-};
+// Backwards compatibility exports
+export const list = (params?: { type?: string; search?: string }) => ledgerService.list(params);
+export const get = (id: string) => ledgerService.getById(id);
+export const create = (data: CreateLedgerRequest) => ledgerService.create(data);
+export const update = (id: string, data: UpdateLedgerRequest) => ledgerService.update(id, data);
+export const deleteLedger = (id: string) => ledgerService.delete(id);
 
-/**
- * Create new ledger account
- */
-export const create = (data: CreateLedgerRequest) => {
-    return apiClient.post<LedgerAccount>(API_ENDPOINTS.ledger.create, data);
-};
-
-/**
- * Update ledger account
- */
-export const update = (id: string, data: UpdateLedgerRequest) => {
-    return apiClient.patch<LedgerAccount>(API_ENDPOINTS.ledger.update(id), data);
-};
-
-/**
- * Delete ledger account
- */
-export const deleteLedger = (id: string) => {
-    return apiClient.delete<void>(API_ENDPOINTS.ledger.delete(id));
-};
+export default ledgerService;
