@@ -15,6 +15,7 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [sameAsBilling, setSameAsBilling] = useState(false);
 
   const [formData, setFormData] = useState<CreateCustomerRequest | UpdateCustomerRequest>({
@@ -44,6 +45,16 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
+    
+    // Clear field error when user types
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value
@@ -69,6 +80,7 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setFieldErrors({});
 
     try {
       if (customer) {
@@ -86,8 +98,29 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to save customer');
       console.error('Customer save error:', err);
+      console.log('Error has errors property?', 'errors' in err);
+      console.log('Error.errors value:', err.errors);
+      console.log('Error.errors type:', typeof err.errors);
+      
+      // Handle validation errors
+      if (err.errors && typeof err.errors === 'object') {
+        console.log('Setting field errors:', err.errors);
+        setFieldErrors(err.errors);
+        setError('Please fix the validation errors below');
+        
+        // Focus first error field
+        const firstField = Object.keys(err.errors)[0];
+        if (firstField) {
+          setTimeout(() => {
+            const element = document.getElementsByName(firstField)[0] as HTMLElement;
+            element?.focus();
+          }, 100);
+        }
+      } else {
+        console.log('No validation errors, showing generic error');
+        setError(err.message || 'Failed to save customer');
+      }
     } finally {
       setLoading(false);
     }
@@ -265,14 +298,21 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
               placeholder="State"
             />
-            <input
-              type="text"
-              name="billingPincode"
-              value={formData.billingPincode}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-              placeholder="Pincode"
-            />
+            <div>
+              <input
+                type="text"
+                name="billingPincode"
+                value={formData.billingPincode}
+                onChange={handleChange}
+                className={`w-full px-4 py-2 border ${
+                  fieldErrors.billingPincode ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 dark:border-gray-600'
+                } rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white`}
+                placeholder="Pincode"
+              />
+              {fieldErrors.billingPincode && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.billingPincode}</p>
+              )}
+            </div>
             <input
               type="text"
               name="billingCountry"
@@ -338,15 +378,22 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Customer
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white disabled:opacity-50"
               placeholder="State"
             />
-            <input
-              type="text"
-              name="shippingPincode"
-              value={formData.shippingPincode}
-              onChange={handleChange}
-              disabled={sameAsBilling}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white disabled:opacity-50"
-              placeholder="Pincode"
-            />
+            <div>
+              <input
+                type="text"
+                name="shippingPincode"
+                value={formData.shippingPincode}
+                onChange={handleChange}
+                disabled={sameAsBilling}
+                className={`w-full px-4 py-2 border ${
+                  fieldErrors.shippingPincode ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 dark:border-gray-600'
+                } rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white disabled:opacity-50`}
+                placeholder="Pincode"
+              />
+              {fieldErrors.shippingPincode && !sameAsBilling && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.shippingPincode}</p>
+              )}
+            </div>
             <input
               type="text"
               name="shippingCountry"

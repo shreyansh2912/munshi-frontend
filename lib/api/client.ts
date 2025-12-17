@@ -246,12 +246,15 @@ class APIClient {
         if (error.response) {
             const { status, data } = error.response;
 
-            // Validation error
-            if (status === HTTP_STATUS.UNPROCESSABLE_ENTITY) {
-                return new ValidationError(
-                    data.message || 'Validation failed',
-                    data.details as Record<string, string[]>
-                );
+            // Validation error (both 400 and 422)
+            if (status === HTTP_STATUS.BAD_REQUEST || status === HTTP_STATUS.UNPROCESSABLE_ENTITY) {
+                // Check if it's a validation error by errorCode or errors object
+                if (data.errorCode === 'VALIDATION_ERROR' || data.errors) {
+                    return new ValidationError(
+                        data.message || 'Validation failed',
+                        data.errors as any
+                    );
+                }
             }
 
             // API error

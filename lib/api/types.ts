@@ -17,6 +17,7 @@ export interface APIError {
     message: string;
     errorCode: string;
     details?: any;
+    errors?: Record<string, string>; // Flat validation errors: { field: "message" }
     timestamp: string;
 }
 
@@ -365,15 +366,18 @@ export class AuthenticationError extends Error {
 }
 
 /**
- * Validation Error (422)
+ * Validation Error (400, 422)
  */
 export class ValidationError extends Error {
+    public errors?: Record<string, string>;
+
     constructor(
         message: string,
-        public fields?: Record<string, string[]>
+        errors?: Record<string, string> | Record<string, string[]>
     ) {
         super(message);
         this.name = 'ValidationError';
+        this.errors = errors as any;
     }
 }
 
