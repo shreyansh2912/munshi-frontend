@@ -91,14 +91,19 @@ export type PaymentFormData = z.infer<typeof paymentFormSchema>;
 
 /**
  * Product Form Schema
+ * Matches backend: munshi-backend/src/modules/products/products.validation.ts
  */
 export const productFormSchema = z.object({
+    sku: textField(100),
     name: textField(255),
-    sku: textField(100, false),
     description: textField(1000, false),
+    categoryId: numberField(1, undefined, false),
     hsnCode: textField(50, false),
-    unitPrice: numberField(0),
-    taxRate: numberField(0, 100, false),
+    sacCode: textField(50, false),
+    productType: z.enum(['goods', 'service']).default('goods'),
+    unitId: numberField(1, undefined, false),
+    hasVariants: z.boolean().default(false),
+    trackInventory: z.boolean().default(true),
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;

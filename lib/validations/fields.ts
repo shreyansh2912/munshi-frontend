@@ -101,6 +101,67 @@ export const accountCodeSchema = z
     .toUpperCase();
 
 /**
+ * HSN Code Validation
+ * Harmonized System of Nomenclature - 4 to 8 digits
+ */
+export const hsnSchema = z
+    .string()
+    .regex(/^[0-9]{4,8}$/, 'HSN code must be 4-8 digits')
+    .optional();
+
+/**
+ * SAC Code Validation
+ * Services Accounting Code - 6 digits
+ */
+export const sacSchema = z
+    .string()
+    .regex(/^[0-9]{6}$/, 'SAC code must be 6 digits')
+    .optional();
+
+/**
+ * SKU Validation
+ * Stock Keeping Unit - alphanumeric with hyphens and underscores
+ */
+export const skuSchema = z
+    .string()
+    .max(100, 'SKU too long')
+    .regex(/^[A-Z0-9_-]+$/i, 'Only letters, numbers, hyphens, and underscores allowed')
+    .transform((val) => val.toUpperCase());
+
+/**
+ * Currency Amount (for display/input)
+ * Positive numbers with up to 2 decimal places
+ */
+export const currencyAmountSchema = z
+    .number()
+    .nonnegative('Amount cannot be negative')
+    .multipleOf(0.01, 'Maximum 2 decimal places');
+
+/**
+ * Date Schema
+ * Validates date strings in ISO format
+ */
+export const dateSchema = (minDate?: Date, maxDate?: Date) => {
+    let schema = z.string().datetime().or(z.date());
+
+    if (minDate) {
+        schema = schema.refine(
+            (val) => new Date(val) >= minDate,
+            `Date must be on or after ${minDate.toLocaleDateString()}`
+        );
+    }
+
+    if (maxDate) {
+        schema = schema.refine(
+            (val) => new Date(val) <= maxDate,
+            `Date must be on or before ${maxDate.toLocaleDateString()}`
+        );
+    }
+
+    return schema;
+};
+
+/**
  * Generic text field with max length
  */
 export const textField = (maxLength: number, required = true) => {
