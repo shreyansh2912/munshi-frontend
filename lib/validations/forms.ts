@@ -58,16 +58,40 @@ export const customerFormSchema = z.object({
 export type CustomerFormData = z.infer<typeof customerFormSchema>;
 
 /**
+ * Invoice Line Item Schema
+ * Schema for individual line items in an invoice
+ */
+export const invoiceLineItemSchema = z.object({
+    lineNumber: numberField(1),
+    description: textField(500),
+    hsnCode: textField(50, false),
+    sacCode: textField(50, false),
+    quantity: numberField(0.01),
+    unitPrice: numberField(0),
+    discountPercent: numberField(0, 100, false).default(0),
+    discountAmount: numberField(0, undefined, false).default(0),
+    taxRate: numberField(0, 100, false).default(18), // Default 18% GST
+});
+
+export type InvoiceLineItemData = z.infer<typeof invoiceLineItemSchema>;
+
+/**
  * Invoice Form Schema
+ * Complete schema with line items array
  */
 export const invoiceFormSchema = z.object({
-    invoiceNumber: textField(100),
-    customerId: z.number(),
-    invoiceDate: z.date(),
-    dueDate: z.date().optional(),
+    invoiceNumber: textField(100, false), // Optional, backend auto-generates
+    invoiceType: z.enum(['tax_invoice', 'proforma', 'credit_note', 'debit_note', 'export_invoice']).default('tax_invoice'),
+    customerId: numberField(1),
+    invoiceDate: z.string().or(z.date()), // Accept both string and Date
+    dueDate: z.string().or(z.date()).optional(),
     placeOfSupply: textField(100, false),
+    isReverseCharge: z.boolean().default(false),
+    isExport: z.boolean().default(false),
+    currency: z.string().length(3).default('INR'),
+    items: z.array(invoiceLineItemSchema).min(1, 'At least one item is required'),
     notes: textField(1000, false),
-    // Items will be handled separately
+    termsAndConditions: textField(2000, false),
 });
 
 export type InvoiceFormData = z.infer<typeof invoiceFormSchema>;

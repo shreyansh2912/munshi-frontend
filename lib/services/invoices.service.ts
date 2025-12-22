@@ -14,7 +14,13 @@ export const invoicesService = {
     /**
      * List all invoices
      */
-    async list(params?: { status?: string; search?: string }): Promise<Invoice[]> {
+    async list(params?: {
+        status?: string;
+        customerId?: number;
+        search?: string;
+        dateFrom?: string;
+        dateTo?: string;
+    }): Promise<Invoice[]> {
         const response = await apiClient.get<APIResponse<Invoice[]>>(API_ENDPOINTS.invoices.list, params);
         return response.data;
     },
@@ -48,6 +54,17 @@ export const invoicesService = {
      */
     async delete(id: string): Promise<void> {
         await apiClient.delete<void>(API_ENDPOINTS.invoices.delete(id));
+    },
+
+    /**
+     * Update invoice status
+     */
+    async updateStatus(id: string, status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'): Promise<Invoice> {
+        const response = await apiClient.patch<APIResponse<Invoice>>(
+            API_ENDPOINTS.invoices.update(id),
+            { status }
+        );
+        return response.data;
     },
 };
 
