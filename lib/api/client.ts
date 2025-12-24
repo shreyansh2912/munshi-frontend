@@ -13,6 +13,7 @@ import {
     NetworkError,
     AuthenticationError,
     ValidationError,
+    RateLimitError,
     RequestConfig,
 } from './types';
 
@@ -244,7 +245,23 @@ class APIClient {
      */
     private transformError(error: AxiosError<APIError>): Error {
         if (error.response) {
-            const { status, data } = error.response;
+            const { status, data, headers } = error.response;
+
+            // Rate limit error (429)
+            if (status === HTTP_STATUS.TOO_MANY_REQUESTS || data.errorCode === 'RATE_LIMIT_EXCEEDED') {
+                // Extract retry-after from headers (in seconds)
+                const retryAfter = headers['retry-after']
+                    ? parseInt(headers['retry-after'], 10)
+                    : 30; // Default to 30 seconds
+
+                const message = data.message || `Rate limit exceeded. Please retry after ${retryAfter} seconds.`;
+
+                if (API_CONFIG.enableLogging) {
+                    console.warn(`[API Rate Limit] ${message}`, { retryAfter });
+                }
+
+                return new RateLimitError(message, retryAfter);
+            }
 
             // Validation error (both 400 and 422)
             if (status === HTTP_STATUS.BAD_REQUEST || status === HTTP_STATUS.UNPROCESSABLE_ENTITY) {
@@ -319,21 +336,41 @@ class APIClient {
             } catch (error) {
                 lastError = error as Error;
 
-                // Don't retry on client errors (4xx) except 429
+                let shouldRetry = false;
+                let delay = API_CONFIG.retryDelay * Math.pow(2, attempt);
+
+                // Check if it's a retryable error
                 if (axios.isAxiosError(error) && error.response) {
                     const status = error.response.status;
-                    if (status >= 400 && status < 500 && status !== HTTP_STATUS.TOO_MANY_REQUESTS) {
+
+                    // Handle rate limit errors (429)
+                    if (status === HTTP_STATUS.TOO_MANY_REQUESTS) {
+                        shouldRetry = true;
+                        // Use server's retry-after header if available
+                        const retryAfter = error.response.headers['retry-after'];
+                        if (retryAfter) {
+                            delay = parseInt(retryAfter, 10) * 1000; // Convert to milliseconds
+                        }
+                    }
+                    // Don't retry on 4xx client errors (except 429)
+                    else if (status >= 400 && status < 500) {
                         throw error;
                     }
+                    // Retry on 5xx server errors
+                    else if (status >= 500) {
+                        shouldRetry = true;
+                    }
+                } else {
+                    // Retry on network errors
+                    shouldRetry = true;
                 }
 
                 // Don't retry on last attempt
-                if (attempt === maxAttempts - 1) {
+                if (attempt === maxAttempts - 1 || !shouldRetry) {
                     throw error;
                 }
 
-                // Exponential backoff
-                const delay = API_CONFIG.retryDelay * Math.pow(2, attempt);
+                // Wait before retrying
                 await new Promise((resolve) => setTimeout(resolve, delay));
 
                 if (API_CONFIG.enableLogging) {

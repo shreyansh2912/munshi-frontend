@@ -381,6 +381,19 @@ export class ValidationError extends Error {
     }
 }
 
+/**
+ * Rate Limit Error (429)
+ */
+export class RateLimitError extends Error {
+    constructor(
+        message: string,
+        public retryAfter?: number // seconds until retry is allowed
+    ) {
+        super(message);
+        this.name = 'RateLimitError';
+    }
+}
+
 // ==================== Product Types ====================
 
 export interface ProductCategory {

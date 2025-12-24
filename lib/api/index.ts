@@ -1,9 +1,6 @@
 /**
  * API Module - Index
  * Central export point for all API-related functionality
-/**
- * API Module - Index
- * Central export point for all API-related functionality
  */
 
 // Configuration
@@ -39,7 +36,21 @@ export {
     NetworkError,
     AuthenticationError,
     ValidationError,
+    RateLimitError,
 } from './types';
+
+// Error utilities
+export {
+    isRateLimitError,
+    isValidationError,
+    isAuthenticationError,
+    isNetworkError,
+    isAPIError,
+    getErrorMessage,
+    getRetryDelay,
+    formatRetryMessage,
+    handleAPIError,
+} from './error-utils';
 
 // Storage
 export { tokenStorage } from './storage';
