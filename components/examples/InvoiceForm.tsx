@@ -11,14 +11,23 @@ import { invoiceFormSchema, InvoiceFormData } from '@/lib/validations/forms';
 import { Button } from '../ui/UI';
 import { toast } from 'sonner';
 import { invoicesService } from '@/lib/services/invoices.service';
+import { useRouter } from 'next/navigation';
+import type { Invoice } from '@/lib/api/types';
 
-export function InvoiceForm() {
+interface InvoiceFormProps {
+    mode?: 'create' | 'edit';
+    invoiceId?: string;
+    initialData?: Invoice;
+}
+
+export function InvoiceForm({ mode = 'create', invoiceId, initialData }: InvoiceFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
 
     const handleSubmit = async (data: InvoiceFormData) => {
         setIsSubmitting(true);
         try {
-            console.log('Submitting invoice data:', data);
+            console.log(`${mode === 'edit' ? 'Updating' : 'Submitting'} invoice data:`, data);
             
             // Transform data for API
             const invoiceData = {
@@ -27,48 +36,98 @@ export function InvoiceForm() {
                 dueDate: data.dueDate ? (typeof data.dueDate === 'string' ? data.dueDate : data.dueDate.toISOString().split('T')[0]) : undefined,
             };
             
-            // Call API
-            await invoicesService.create(invoiceData as any);
-            
-            toast.success('Invoice created successfully!');
-            
-            // TODO: Navigate to invoice list or detail page
-            // router.push('/invoices');
+            // Call appropriate API method
+            if (mode === 'edit' && invoiceId) {
+                await invoicesService.update(invoiceId, invoiceData as any);
+                toast.success('Invoice updated successfully!');
+                router.push(`/invoices/${invoiceId}`);
+            } else {
+                const newInvoice = await invoicesService.create(invoiceData as any);
+                toast.success('Invoice created successfully!');
+                router.push(`/invoices/${newInvoice.id}`);
+            }
         } catch (error: any) {
             console.error('Form submission error:', error);
-            toast.error(error.message || 'Failed to create invoice');
+            toast.error(error.message || `Failed to ${mode} invoice`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    // Prepare default values based on mode
+    const getDefaultValues = () => {
+        if (mode === 'edit' && initialData) {
+            // Map backend items to form schema format
+            const formItems = (initialData.items || []).map((item, index) => ({
+                lineNumber: item.lineNumber || index + 1,
+                description: item.description || '',
+                hsnCode: item.hsnCode || '',
+                sacCode: item.sacCode || '',
+                quantity: item.quantity || 1,
+                unitPrice: item.unitPrice || 0,
+                taxRate: 18, // Default tax rate since backend doesn't store this explicitly
+                discountPercent: item.discountPercent || 0,
+                discountAmount: item.discountAmount || 0,
+            }));
+
+            return {
+                invoiceNumber: initialData.invoiceNumber || '',
+                invoiceType: initialData.invoiceType || 'tax_invoice',
+                customerId: initialData.customerId,
+                placeOfSupply: initialData.placeOfSupply || '',
+                currency: initialData.currency || 'INR',
+                isReverseCharge: initialData.isReverseCharge || false,
+                isExport: initialData.isExport || false,
+                invoiceDate: initialData.invoiceDate,
+                dueDate: initialData.dueDate || '',
+                items: formItems.length > 0 ? formItems : [{
+                    lineNumber: 1,
+                    description: '',
+                    hsnCode: '',
+                    sacCode: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    taxRate: 18,
+                    discountPercent: 0,
+                    discountAmount: 0,
+                }],
+                notes: initialData.notes || '',
+                termsAndConditions: initialData.termsAndConditions || '',
+            };
+        }
+        
+        return {
+            invoiceType: 'tax_invoice' as const,
+            currency: 'INR',
+            isReverseCharge: false,
+            isExport: false,
+            invoiceDate: new Date().toISOString().split('T')[0],
+            items: [
+                {
+                    lineNumber: 1,
+                    description: '',
+                    hsnCode: '',
+                    sacCode: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    taxRate: 18,
+                    discountPercent: 0,
+                    discountAmount: 0,
+                },
+            ],
+        };
+    };
+
     return (
         <div className="max-w-7xl mx-auto p-6">
             <h2 className="text-2xl font-heading font-bold text-munshi-indigo dark:text-white mb-6">
-                Create Invoice
+                {mode === 'edit' ? 'Edit Invoice' : 'Create Invoice'}
             </h2>
 
             <Form
                 schema={invoiceFormSchema}
                 onSubmit={handleSubmit}
-                defaultValues={{
-                    invoiceType: 'tax_invoice',
-                    currency: 'INR',
-                    isReverseCharge: false,
-                    isExport: false,
-                    invoiceDate: new Date().toISOString().split('T')[0],
-                    items: [
-                        {
-                            lineNumber: 1,
-                            description: '',
-                            quantity: 1,
-                            unitPrice: 0,
-                            taxRate: 18,
-                            discountPercent: 0,
-                            discountAmount: 0,
-                        },
-                    ],
-                }}
+                defaultValues={getDefaultValues()}
                 className="space-y-6"
             >
                 {/* Invoice Header */}

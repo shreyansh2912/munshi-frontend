@@ -10,6 +10,7 @@ import { invoicesService } from '@/lib/services/invoices.service';
 import type { Invoice } from '@/lib/api/types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { InvoiceForm } from '@/components/examples/InvoiceForm';
 
 export default function EditInvoicePage({ params }: { params: { id: string } }) {
     const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -69,27 +70,12 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
     }
 
     return (
-        <div className="p-8">
-            <div className="mb-6">
-                <h1 className="text-3xl font-heading font-bold text-munshi-indigo dark:text-white">
-                    Edit Invoice {invoice.invoiceNumber}
-                </h1>
-                <p className="text-gray-600 dark:text-zinc-400 mt-2">
-                    Modify the invoice details below
-                </p>
-            </div>
-
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800 p-6">
-                <p className="text-gray-600 dark:text-zinc-400">
-                    Invoice edit form will be implemented here. For now, navigate back to the invoice detail.
-                </p>
-                <button
-                    onClick={() => router.push(`/invoices/${params.id}`)}
-                    className="mt-4 px-4 py-2 bg-munshi-indigo text-white rounded-lg hover:bg-munshi-indigo/90"
-                >
-                    Back to Invoice
-                </button>
-            </div>
+        <div className="max-w-7xl mx-auto">
+            <InvoiceForm 
+                mode="edit" 
+                invoiceId={params.id}
+                initialData={invoice}
+            />
         </div>
     );
 }

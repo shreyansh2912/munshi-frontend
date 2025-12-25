@@ -17,4 +17,6 @@ export { CurrencyInput } from './inputs/CurrencyInput';
 export { HSNInput } from './inputs/HSNInput';
 export { PercentageInput } from './inputs/PercentageInput';
 export { SKUInput } from './inputs/SKUInput';
+export { InvoiceLineItem } from './InvoiceLineItem';
+export { InvoiceLineItems } from './InvoiceLineItems';
 
